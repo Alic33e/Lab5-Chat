@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Chat con Socket.ID</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+        }
+        h1 {
+            margin-top: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #333;
+            color: #fff;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: block;
+            margin: 0 auto;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            padding-left: 10px;
+            padding-right: 10px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        li {
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+        .mensaje {
+            display: flex;
+            align-items: center;
+        }
+        .mensaje:nth-child(even) {
+            justify-content: flex-end;
+        }
+        .imagen-perfil {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+        }
+        .nombre-usuario {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .texto-mensaje {
+            margin: 0;
+            word-wrap: break-word;
+        }
+        .align-right {
+            justify-content: flex-end;
+            text-align: right;
+        }
+
+        @media screen and (min-width: 600px) {
+            form {
+                max-width: 400px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>        
+        var socket = io();
+        function enviarMensaje() {
+            var mensaje = document.getElementById('mensaje').value;
+            socket.emit('chat message 1', mensaje);
+            socket.emit('chat message 2', mensaje);
+            document.getElementById('mensaje').value = '';
+            return false;
+        }
+        function crearMensaje(data, chatType) {
+            var li = document.createElement('li');
+            li.textContent = '(' + data.hora + ')';
+            document.getElementById('lista-mensajes').appendChild(li);
+            var listaMensajes = document.getElementById('lista-mensajes');
+            var contenedorMensaje = document.createElement('div');
+            contenedorMensaje.className = 'chat-message';
+            if (chatType === 'chat2') {
+                contenedorMensaje.classList.add('align-right');
+            }
+            var contenedorNombreImagen = document.createElement('div');
+            var imagen = document.createElement('img');
+            imagen.src = data.imagen;
+            imagen.className = 'imagen-perfil';
+            var nombre = document.createElement('span');
+            nombre.textContent = data.nombre;
+            nombre.className = 'nombre-usuario';
+            var mensaje = document.createElement('p');
+            mensaje.textContent = data.mensaje;
+            mensaje.className = 'texto-mensaje';
+            if (chatType === 'chat2') {
+                imagen.classList.add('align-right');
+                li.classList.add('align-right');
+            }
+            contenedorNombreImagen.appendChild(imagen);
+            contenedorNombreImagen.appendChild(nombre);
+            contenedorMensaje.appendChild(contenedorNombreImagen);
+            contenedorMensaje.appendChild(mensaje);
+            listaMensajes.appendChild(contenedorMensaje);
+        }
+        socket.on('chat message 1', function(data) {
+            crearMensaje(data, 'chat1');
+        });
+        socket.on('chat message 2', function(data) {
+            crearMensaje(data, 'chat2');
+        });
+        function enviarMensaje1() {
+            var nombre = document.getElementById('nombre1').value;
+            var imagen = document.getElementById('imagen-perfil1').value;
+            var mensaje = document.getElementById('mensaje1').value;
+            var hora = new Date().toLocaleTimeString();
+            socket.emit('chat message 1', {nombre: nombre, imagen: imagen, mensaje: mensaje, hora: hora});
+            document.getElementById('mensaje1').value = '';
+            return false;
+        }
+        function enviarMensaje2() {
+            var nombre = document.getElementById('nombre2').value;
+            var imagen = document.getElementById('imagen-perfil2').value;
+            var mensaje = document.getElementById('mensaje2').value;
+            var hora = new Date().toLocaleTimeString();
+            socket.emit('chat message 2', {nombre: nombre, imagen: imagen, mensaje: mensaje, hora: hora});
+            document.getElementById('mensaje2').value = '';
+            return false;
+        }
+    </script>
+</head>
+<body>
+    <h1>Chat 1</h1>
+    <form onsubmit="return enviarMensaje1()">
+        <input type="text" id="nombre1" placeholder="Nombre">
+        <input type="text" id="imagen-perfil1" placeholder="URL de la imagen">
+        <input type="text" id="mensaje1" placeholder="Mensaje">
+        <button>Enviar</button>
+    </form>
+    <h1>Chat 2</h1>
+    <form onsubmit="return enviarMensaje2()">
+        <input type="text" id="nombre2" placeholder="Nombre">
+        <input type="text" id="imagen-perfil2" placeholder="URL de la imagen">
+        <input type="text" id="mensaje2" placeholder="Mensaje">
+        <button>Enviar</button>
+    </form>
+    <h1>Mensajes</h1>
+    <ul id="lista-mensajes"></ul>
+</body>
+</html>
